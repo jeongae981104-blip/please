@@ -1,0 +1,2060 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"/>
+<title>Treasure Town 3D — Realistic Edition</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'; base-uri 'none'; form-action 'none'"/>
+<style>
+:root {
+  --wrks-viz-font-family: Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --wrks-viz-primary: #2563eb;
+  --wrks-viz-bg: #ffffff;
+  --wrks-viz-fg: #111827;
+  --wrks-viz-border: #d1d5db;
+  --wrks-viz-radius: 8px;
+  --wrks-viz-space-1: 4px;
+  --wrks-viz-space-2: 8px;
+  --wrks-viz-space-3: 12px;
+  --wrks-viz-space-4: 16px;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 12px;
+  font-family: var(--wrks-viz-font-family);
+  background: var(--wrks-viz-bg);
+  color: var(--wrks-viz-fg);
+}
+h1 {
+  font-size: 20px;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.badgeRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+#progress {
+  font-weight: 700;
+  font-size: 15px;
+  padding: 4px 10px;
+  border: 1px solid var(--wrks-viz-border);
+  border-radius: var(--wrks-viz-radius);
+  background: var(--wrks-viz-bg);
+}
+#roomBadge {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border: 1px solid var(--wrks-viz-border);
+  border-radius: var(--wrks-viz-radius);
+  background: var(--wrks-viz-bg);
+}
+.scene {
+  position: relative;
+  height: 450px;
+  border: 1px solid var(--wrks-viz-border);
+  border-radius: var(--wrks-viz-radius);
+  overflow: hidden;
+  background: #0f172a;
+  user-select: none;
+}
+canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+#labels {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+.sign {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  background: rgba(20, 26, 35, 0.92);
+  color: #f8fafc;
+  padding: 2px 7px;
+  border: 1.5px solid #cbd5e1;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  border-radius: 3px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.sign.targetSign {
+  border-color: #38bdf8;
+  color: #e0f2fe;
+}
+.peerTag {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  background: rgba(15, 23, 42, 0.85);
+  color: #ffffff;
+  padding: 2px 6px;
+  border: 1px solid #94a3b8;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.hud {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(15, 23, 42, 0.82);
+  color: #f8fafc;
+  border: 1px solid rgba(203, 213, 225, 0.4);
+  padding: 7px 10px;
+  border-radius: 6px;
+  font-size: 12.5px;
+  max-width: 68%;
+  line-height: 1.4;
+}
+#questionBanner {
+  position: absolute;
+  top: 52px;
+  left: 10px;
+  background: rgba(37, 99, 235, 0.9);
+  color: #ffffff;
+  border: 1px solid rgba(191, 219, 254, 0.6);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 700;
+}
+#flash {
+  position: absolute;
+  inset: 0;
+  border: 0 solid #dc2626;
+  pointer-events: none;
+}
+#map {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  width: 172px;
+  height: 124px;
+  border: 1px solid rgba(203, 213, 225, 0.6);
+  border-radius: 6px;
+  background: rgba(15, 23, 42, 0.84);
+  pointer-events: auto;
+}
+.navOverlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.hudBtn {
+  pointer-events: auto;
+  position: absolute;
+  background: rgba(15, 23, 42, 0.48);
+  color: #f8fafc;
+  border: 1px solid rgba(248, 250, 252, 0.45);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.hudBtn:hover {
+  background: rgba(37, 99, 235, 0.68);
+  border-color: #93c5fd;
+}
+.hudBtn:active {
+  transform: scale(0.97);
+}
+.hudBtn .arrow {
+  font-size: 18px;
+  line-height: 1;
+}
+#hudLeft {
+  left: 12px;
+  top: 54%;
+  transform: translateY(-50%);
+}
+#hudRight {
+  right: 12px;
+  top: 54%;
+  transform: translateY(-50%);
+}
+.hudBottomGroup {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  align-items: flex-end;
+  pointer-events: auto;
+}
+.hudBottomGroup .hudBtn {
+  position: static;
+}
+.hudBtn.subBtn {
+  padding: 8px 10px;
+  font-size: 12px;
+}
+.panel {
+  margin-top: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--wrks-viz-border);
+  border-radius: var(--wrks-viz-radius);
+  background: var(--wrks-viz-bg);
+}
+.row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin: 6px 0;
+  align-items: center;
+}
+button, select {
+  font: inherit;
+  font-size: 13px;
+  padding: 8px 11px;
+  border: 1px solid var(--wrks-viz-border);
+  border-radius: 4px;
+  background: var(--wrks-viz-bg);
+  color: var(--wrks-viz-fg);
+  cursor: pointer;
+}
+button.primary {
+  background: var(--wrks-viz-primary);
+  color: #ffffff;
+  border-color: var(--wrks-viz-primary);
+}
+button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+#question {
+  font-size: 18px;
+  font-weight: 700;
+}
+#message {
+  min-height: 22px;
+  margin-top: 4px;
+  font-size: 13.5px;
+  font-weight: 500;
+}
+#hint {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--wrks-viz-primary);
+  font-weight: 600;
+  margin-top: 4px;
+}
+.small {
+  font-size: 12px;
+  margin: 4px 0;
+  line-height: 1.5;
+}
+#welcome {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 23, 42, 0.82);
+  pointer-events: auto;
+}
+.intro {
+  max-width: 440px;
+  padding: 20px;
+  border: 1px solid var(--wrks-viz-border);
+  border-radius: var(--wrks-viz-radius);
+  background: var(--wrks-viz-bg);
+  color: var(--wrks-viz-fg);
+}
+.intro h2 {
+  margin-top: 0;
+  font-size: 18px;
+}
+details {
+  font-size: 12.5px;
+  margin-top: 6px;
+}
+#places {
+  line-height: 1.65;
+  margin-top: 4px;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+}
+[hidden] { display: none !important; }
+#entry {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(15, 23, 42, 0.88);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px;
+  overflow: auto;
+}
+.entryCard {
+  width: min(560px, 100%);
+  max-height: 94vh;
+  overflow: auto;
+  padding: 22px;
+  border: 1px solid var(--wrks-viz-border);
+  border-radius: var(--wrks-viz-radius);
+  background: var(--wrks-viz-bg);
+  color: var(--wrks-viz-fg);
+}
+#loginForm {
+  display: grid;
+  gap: 7px;
+}
+input {
+  font: inherit;
+  padding: 9px 10px;
+  border: 1px solid var(--wrks-viz-border);
+  border-radius: 4px;
+  background: var(--wrks-viz-bg);
+  color: var(--wrks-viz-fg);
+}
+#characterList {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin: 10px 0;
+}
+.character {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px;
+}
+.character[aria-pressed="true"] {
+  outline: 3px solid var(--wrks-viz-primary);
+  outline-offset: -3px;
+}
+.characterIcon {
+  font-size: 38px;
+}
+.jewel {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+#danger {
+  position: absolute;
+  bottom: 74px;
+  left: 12px;
+  font-weight: 700;
+  background: rgba(127, 29, 29, 0.92);
+  color: #fef2f2;
+  border: 1.5px solid #f87171;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 12.5px;
+}
+#portrait {
+  font-size: 14px;
+  font-weight: 600;
+}
+.soundRow {
+  align-items: center;
+}
+#volume {
+  width: 90px;
+}
+@media (max-width: 600px) {
+  .scene { height: 360px; }
+  #map { width: 126px; height: 92px; }
+  .sign { font-size: 9.5px; }
+  .hud { font-size: 11px; }
+  .hudBtn { padding: 8px 10px; font-size: 11.5px; }
+}
+</style>
+</head>
+<body>
+<section aria-label="로그인과 캐릭터 선택" id="entry">
+  <div class="entryCard">
+    <section id="loginPage">
+      <h2>Treasure Town 3D — Realistic Edition</h2>
+      <p class="small">반, 번호, 이름(및 선택 사항인 교사 입장 코드)을 입력하고 사실적인 3D 마을 탐험을 시작하세요.</p>
+      <form id="loginForm">
+        <label for="codeInput">교사 입장 코드 (선택 — 같은 코드 입력 시 함께 플레이)</label>
+        <input autocomplete="off" id="codeInput" maxlength="20" placeholder="예: ENG5 (혼자 하려면 비워두세요)" value="ENG5"/>
+        <label for="classInput">반</label>
+        <input autocomplete="off" id="classInput" maxlength="20" placeholder="예: 5학년 2" required="" value="5학년 1"/>
+        <label for="numberInput">번호</label>
+        <input id="numberInput" max="999" min="1" placeholder="예: 12" required="" type="number" value="1"/>
+        <label for="nameInput">이름</label>
+        <input autocomplete="off" id="nameInput" maxlength="30" placeholder="이름" required="" value="홍길동"/>
+        <p id="loginError" role="alert" class="small" style="color:#dc2626"></p>
+        <button class="primary" type="submit">로그인 / Log in</button>
+      </form>
+      <p class="small">이 화면은 학생 정보 입력 화면입니다. 보물(💎) 입구에 닿으면 자동으로 획득되며, 귀신·괴물의 위치는 지도에서 숨겨집니다.</p>
+    </section>
+    <section hidden="" id="characterPage">
+      <h2>Choose your character</h2>
+      <p id="greeting"></p>
+      <div id="characterList"></div>
+      <div class="row">
+        <button id="backLogin" type="button">뒤로</button>
+        <button class="primary" id="chooseCharacter" type="button">선택하고 게임 시작</button>
+      </div>
+      <p class="small">1인칭 실사풍 3D 시점으로 진행되며, 선택한 캐릭터는 프로필과 지도 및 친구 화면에 표시됩니다.</p>
+      <p class="small">무서운 실사풍 귀신·괴물과 근접 효과음이 등장합니다. 상단에서 소리를 끄거나 음량을 조절할 수 있습니다.</p>
+    </section>
+  </div>
+</section>
+
+<div class="top">
+  <h1>Treasure Town 3D</h1>
+  <div class="badgeRow">
+    <div id="roomBadge">방 코드: 개인 탐험</div>
+    <div id="progress">❤️❤️❤️ · 💎 0개</div>
+  </div>
+</div>
+
+<div class="scene">
+  <canvas aria-label="1인칭 실사풍 3D 마을 게임 화면" id="world"></canvas>
+  <div class="overlay">
+    <div id="labels"></div>
+    <div class="hud" id="status">출발 위치: 마을 남서쪽 · 바라보는 방향: North</div>
+    <div id="questionBanner">Where is the …?</div>
+    <svg aria-label="마을 지도" id="map" role="img" viewBox="0 0 240 160"></svg>
+    <div id="flash"></div>
+    <div hidden="" id="danger" role="status">주의: 귀신·괴물이 1블록 이내에 있습니다!</div>
+    <div class="navOverlay" aria-label="반투명 방향 이동 버튼">
+      <button type="button" class="hudBtn" id="hudLeft" title="Turn left (←)">
+        <span class="arrow">↶</span>
+        <span>Turn left</span>
+      </button>
+      <button type="button" class="hudBtn" id="hudRight" title="Turn right (→)">
+        <span class="arrow">↷</span>
+        <span>Turn right</span>
+      </button>
+      <div class="hudBottomGroup">
+        <button type="button" class="hudBtn" id="hudForward1" title="Go straight 1 block (↑)">
+          <span class="arrow">↑</span>
+          <span>Go straight</span>
+        </button>
+        <button type="button" class="hudBtn subBtn" id="hudForward2" title="Go straight 2 blocks">
+          <span>↑ 2 blocks</span>
+        </button>
+        <button type="button" class="hudBtn subBtn" id="hudForward3" title="Go straight 3 blocks">
+          <span>↑ 3 blocks</span>
+        </button>
+      </div>
+    </div>
+    <div id="welcome" style="display:none">
+      <div class="intro">
+        <h2>영어로 길을 찾아 보물을 모으세요</h2>
+        <p class="small">실사풍 3D 그래픽으로 구현된 60개 건물과 거리를 탐험합니다. 보물(💎)이 있는 건물 입구에 닿으면 자동으로 점수가 올라가며, 보물은 획득할 때마다 새로운 장소에 무작위로 다시 나타나며, 원하는 만큼 계속 모을 수 있습니다.</p>
+        <p class="small">화면의 반투명 방향 버튼(Turn left / Go straight / Turn right) 또는 키보드 화살표 키로 이동하세요.</p>
+        <button class="primary" id="start" type="button">Start game</button>
+        <div class="small" id="error"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="row soundRow">
+    <span id="portrait">캐릭터 선택 전</span>
+    <button aria-pressed="true" id="soundToggle" type="button">소리 끄기</button>
+    <label for="volume" class="small">음량</label>
+    <input id="volume" max="100" min="0" type="range" value="25"/>
+    <span class="small" id="soundState">게임 시작 후 소리가 활성화됩니다.</span>
+    <button id="logout" type="button">로그아웃</button>
+  </div>
+  <div id="question">Where is the …?</div>
+  <div class="row">
+    <button class="move" data-blocks="1" type="button">Go straight 1 block.</button>
+    <button class="move" data-blocks="2" type="button">Go straight 2 blocks.</button>
+    <button class="move" data-blocks="3" type="button">Go straight 3 blocks.</button>
+    <button id="left" type="button">Turn left.</button>
+    <button id="right" type="button">Turn right.</button>
+    <button class="primary" id="search" type="button">Search here</button>
+    <button id="hintBtn" type="button">길 안내 힌트</button>
+    <button id="pause" type="button">Pause</button>
+    <button id="reset" type="button">Restart</button>
+  </div>
+  <div aria-live="polite" id="message" role="status">로그인한 뒤 캐릭터를 선택해 주세요.</div>
+  <div id="hint"></div>
+  <p class="small">키보드: ↑ = 1블록 직진 · ← / → = 회전 · Space = 확인 · P = 일시정지. 보물(💎)이 있는 파란 입구에 닿으면 자동으로 획득됩니다. 전체지도에서 괴물·귀신의 위치는 표시되지 않습니다.</p>
+  <details>
+    <summary>장소 60개와 영어 길 안내 핵심 표현 보기</summary>
+    <div id="places"></div>
+    <p class="small">Where is the (place)? / Go straight (number) blocks. / Turn left. / Turn right. / It's next to the (place). / It's on your left/right.</p>
+  </details>
+</div>
+
+<div class="sr-only">
+  <table>
+    <caption>Treasure Town 3D 게임 정보</caption>
+    <thead>
+      <tr><th>항목</th><th>값</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>장소 수</td><td>60개 건물</td></tr>
+      <tr><td>보물 목표</td><td>무제한 랜덤 생성 (💎)</td></tr>
+      <tr><td>초기 목숨</td><td>3개 (❤️❤️❤️)</td></tr>
+      <tr><td>그래픽 스타일</td><td>실사풍 3D 벽돌·유리·아스팔트·가로수·귀신·괴물 셰이더</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<script>
+'use strict';
+const names = [
+  "museum", "market", "hospital", "library", "school", "bank", "post office", "police station", "fire station", "bakery",
+  "restaurant", "toy shop", "bookstore", "supermarket", "cinema", "cafe", "flower shop", "pet shop", "music shop", "sports center",
+  "swimming pool", "bus station", "train station", "hotel", "city hall", "park office", "art gallery", "science center", "aquarium", "zoo entrance",
+  "candy shop", "ice cream shop", "pizza shop", "burger shop", "tea house", "clothes shop", "shoe shop", "gift shop", "computer shop", "phone shop",
+  "furniture shop", "bicycle shop", "car garage", "dental clinic", "pharmacy", "health center", "community center", "dance studio", "music school", "language school",
+  "kindergarten", "college", "university", "shopping mall", "department store", "food court", "farm shop", "garden center", "observatory", "theater"
+];
+
+const places = names.map((name, i) => ({
+  name,
+  x: 4 + (i % 10) * 4,
+  z: 4 + Math.floor(i / 10) * 4,
+  doorX: 2 + (i % 10) * 4,
+  doorZ: 6 + Math.floor(i / 10) * 4,
+  height: 2.95 + (i % 3) * 0.72 + ((i * 7) % 2) * 0.35,
+  style: i % 5
+}));
+
+const $ = id => document.getElementById(id);
+$('places').textContent = names.join(' · ');
+
+const canvas = $('world');
+const gl = canvas.getContext('webgl', { antialias: true, alpha: false });
+
+let running = false, paused = false, ended = false;
+let lives = 3, score = 0, yaw = 0, px = 2, pz = 26;
+let move = null, turn = null, invincible = 0, last = 0, target = 0;
+let order = [], monsters = [], hintOn = false;
+let student = null, selected = 0, characterReady = false, roomCode = '';
+let peers = {};
+let bc = null;
+
+const TAU = Math.PI * 2;
+const avatars = [
+  { name: 'Explorer', icon: '🧑‍🚀', color: '#3b82f6', rgb: [0.23, 0.51, 0.96], desc: '파란 탐험가' },
+  { name: 'Wizard', icon: '🧙', color: '#8b5cf6', rgb: [0.55, 0.36, 0.96], desc: '보라 마법사' },
+  { name: 'Detective', icon: '🕵️', color: '#d97706', rgb: [0.85, 0.47, 0.02], desc: '갈색 탐정' },
+  { name: 'Robot', icon: '🤖', color: '#10b981', rgb: [0.06, 0.73, 0.51], desc: '초록 로봇' }
+];
+
+// Procedural Realistic Shader
+// uMat:
+// 0 = solid/painted architectural stone/metal
+// 1 = realistic brick/stone wall with mortar & weathering
+// 2 = reflective window glass with curtains & interior warm light
+// 3 = asphalt road & concrete sidewalk pavers
+// 4 = roof shingles / striped fabric awning
+// 5 = natural foliage & tree bark
+// 6 = haunted ghost shroud & pallid skin
+// 7 = monster scaly muscle hide
+// 8 = realistic twilight sky dome with clouds & distant mountains
+// 9 = glowing lantern / treasure crystal / shadow
+const vertexShaderSrc = `
+attribute vec3 aPosition;
+attribute vec3 aNormal;
+attribute vec3 aColor;
+attribute float aMat;
+
+uniform mat4 uVP;
+uniform vec3 uOffset;
+uniform vec3 uScale;
+uniform vec3 uColor;
+uniform float uMatOverride;
+uniform float uRotY;
+
+varying vec3 vNormal;
+varying vec3 vPos;
+varying vec3 vLocal;
+varying vec3 vColor;
+varying float vMat;
+
+void main() {
+  vec3 scaled = aPosition * uScale;
+  float c = cos(uRotY);
+  float s = sin(uRotY);
+  vec3 rotated = vec3(scaled.x * c + scaled.z * s, scaled.y, -scaled.x * s + scaled.z * c);
+  vec3 worldPos = rotated + uOffset;
+  vec3 worldNorm = vec3(aNormal.x * c + aNormal.z * s, aNormal.y, -aNormal.x * s + aNormal.z * c);
+  vPos = worldPos;
+  vLocal = aPosition;
+  vNormal = worldNorm;
+  vColor = (uMatOverride >= 0.0) ? uColor : aColor;
+  vMat = (uMatOverride >= 0.0) ? uMatOverride : aMat;
+  gl_Position = uVP * vec4(worldPos, 1.0);
+}
+`;
+
+const fragmentShaderSrc = `
+precision mediump float;
+uniform vec3 uEye;
+uniform float uTime;
+
+varying vec3 vNormal;
+varying vec3 vPos;
+varying vec3 vLocal;
+varying vec3 vColor;
+varying float vMat;
+
+float hash(vec2 p) {
+  return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+}
+
+float noise(vec2 p) {
+  vec2 i = floor(p);
+  vec2 f = fract(p);
+  f = f * f * (3.0 - 2.0 * f);
+  float a = hash(i);
+  float b = hash(i + vec2(1.0, 0.0));
+  float c = hash(i + vec2(0.0, 1.0));
+  float d = hash(i + vec2(1.0, 1.0));
+  return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+}
+
+void main() {
+  vec3 N = normalize(vNormal);
+  vec3 V = normalize(uEye - vPos);
+  float dist = distance(vPos, uEye);
+  int mat = int(vMat + 0.5);
+
+  // Sky Dome (mat == 8)
+  if (mat == 8) {
+    vec3 dir = normalize(vPos - uEye);
+    float h = clamp(dir.y, 0.0, 1.0);
+    vec3 zenith = vec3(0.09, 0.16, 0.30);
+    vec3 midSky = vec3(0.22, 0.36, 0.54);
+    vec3 horizon = vec3(0.68, 0.55, 0.48);
+    vec3 sky = mix(horizon, midSky, smoothstep(0.0, 0.28, h));
+    sky = mix(sky, zenith, smoothstep(0.28, 0.85, h));
+    vec3 sunDir = normalize(vec3(-0.45, 0.32, -0.82));
+    float sunAmt = max(dot(dir, sunDir), 0.0);
+    sky += vec3(1.0, 0.72, 0.45) * pow(sunAmt, 18.0) * 0.45;
+    sky += vec3(1.0, 0.92, 0.80) * smoothstep(0.996, 0.9995, sunAmt);
+    if (dir.y > 0.03) {
+      vec2 cloudUV = dir.xz / (dir.y + 0.18) * 1.6 + vec2(uTime * 0.012, -uTime * 0.006);
+      float c1 = noise(cloudUV * 2.2) * 0.6 + noise(cloudUV * 5.1) * 0.4;
+      float cloudMask = smoothstep(0.48, 0.76, c1) * smoothstep(0.03, 0.22, dir.y);
+      vec3 cloudCol = mix(vec3(0.38, 0.42, 0.52), vec3(0.95, 0.84, 0.76), pow(sunAmt, 3.0) * 0.7 + 0.3);
+      sky = mix(sky, cloudCol, cloudMask * 0.65);
+    }
+    // Distant mountain silhouette near horizon
+    float angle = atan(dir.z, dir.x);
+    float mtn = 0.035 + 0.045 * noise(vec2(angle * 4.5, 1.0)) + 0.02 * noise(vec2(angle * 12.0, 2.0));
+    if (dir.y < mtn && dir.y > -0.05) {
+      sky = mix(sky, vec3(0.14, 0.18, 0.26), smoothstep(mtn, mtn - 0.008, dir.y));
+    }
+    gl_FragColor = vec4(sky, 1.0);
+    return;
+  }
+
+  // Contact shadow (mat == 10)
+  if (mat == 10) {
+    float r = length(vLocal.xz) * 2.0;
+    float darkness = smoothstep(1.0, 0.15, r);
+    vec3 col = mix(vec3(0.17, 0.19, 0.21), vec3(0.04, 0.05, 0.06), darkness * 0.85);
+    float fog = smoothstep(16.0, 46.0, dist);
+    col = mix(col, vec3(0.45, 0.46, 0.52), fog * 0.88);
+    gl_FragColor = vec4(col, 1.0);
+    return;
+  }
+
+  vec3 base = vColor;
+  float specPower = 16.0;
+  float specStrength = 0.12;
+  float emissive = 0.0;
+
+  // Mat 1: Realistic Brick & Stone Masonry
+  if (mat == 1) {
+    vec2 uv = (abs(N.x) > 0.5) ? vPos.zy : vPos.xy;
+    vec2 brickUV = uv * vec2(3.6, 7.2);
+    brickUV.x += mod(floor(brickUV.y), 2.0) * 0.5;
+    vec2 bid = floor(brickUV);
+    vec2 bf = fract(brickUV);
+    float mortar = step(0.08, bf.x) * step(0.12, bf.y);
+    float bVar = (hash(bid) - 0.5) * 0.14;
+    float fineNoise = (noise(uv * 28.0) - 0.5) * 0.06;
+    vec3 brickCol = base + vec3(bVar + fineNoise);
+    vec3 mortarCol = base * 0.68 + vec3(0.08);
+    base = mix(mortarCol, brickCol, mortar);
+    // Floor ledge band & ground grime AO
+    float storyBand = smoothstep(0.04, 0.0, abs(fract(vPos.y * 0.78) - 0.95));
+    base = mix(base, base * 0.72, storyBand * 0.55);
+    float groundDirt = smoothstep(0.0, 0.85, vPos.y - 0.18);
+    base *= (0.72 + 0.28 * groundDirt);
+    specStrength = 0.08;
+  }
+  // Mat 2: Architectural Reflective Window Glass
+  else if (mat == 2) {
+    vec2 uv = (abs(N.x) > 0.5) ? vPos.zy : vPos.xy;
+    vec2 pane = fract(uv * vec2(2.2, 1.8));
+    float frame = step(0.07, pane.x) * step(pane.x, 0.93) * step(0.06, pane.y) * step(pane.y, 0.94);
+    vec3 R = reflect(-V, N);
+    float skyRefl = clamp(R.y * 0.5 + 0.5, 0.0, 1.0);
+    vec3 reflCol = mix(vec3(0.55, 0.48, 0.46), vec3(0.18, 0.32, 0.52), skyRefl);
+    float roomSeed = hash(floor(vPos.xz * 0.5) + floor(vPos.y * 0.8));
+    vec3 roomLight = (roomSeed > 0.42)
+      ? mix(vec3(0.95, 0.76, 0.44), vec3(0.82, 0.60, 0.32), pane.y)
+      : vec3(0.10, 0.14, 0.20);
+    // Subtle curtain pattern
+    float curtain = sin(pane.x * 24.0) * 0.06;
+    float fresnel = pow(1.0 - max(dot(N, V), 0.0), 3.0);
+    vec3 glassCol = mix(roomLight + curtain, reflCol, 0.42 + 0.45 * fresnel);
+    base = mix(vec3(0.14, 0.16, 0.19), glassCol, frame);
+    specPower = 64.0;
+    specStrength = 0.65 * frame;
+    emissive = (roomSeed > 0.42) ? 0.38 * frame : 0.05;
+  }
+  // Mat 3: Asphalt Road & Sidewalk Pavers
+  else if (mat == 3) {
+    float g1 = noise(vPos.xz * 18.0);
+    float g2 = noise(vPos.xz * 55.0);
+    if (vPos.y > 0.06) {
+      // Sidewalk concrete pavers
+      vec2 tile = fract(vPos.xz * 2.5);
+      float grout = step(0.06, tile.x) * step(0.06, tile.y);
+      base = base * (0.90 + 0.14 * g1) * (0.86 + 0.14 * grout);
+    } else {
+      // Asphalt road with subtle aggregate & tire wear
+      base = base * (0.82 + 0.24 * g1 + 0.10 * g2);
+      specStrength = 0.22;
+    }
+  }
+  // Mat 4: Roof Tiles & Striped Fabric Awnings
+  else if (mat == 4) {
+    vec2 uv = vPos.xz + vec2(vPos.y * 2.0);
+    float stripe = sin((vPos.x + vPos.z) * 14.0);
+    if (vPos.y < 2.35) {
+      // Striped shop awning
+      vec3 cream = vec3(0.94, 0.91, 0.85);
+      base = (stripe > 0.0) ? base : cream;
+    } else {
+      // Roof slate tiles
+      float shingle = sin(vPos.y * 28.0) * sin((vPos.x + vPos.z) * 18.0);
+      base *= (0.88 + 0.12 * shingle);
+    }
+  }
+  // Mat 5: Realistic Foliage & Tree Bark
+  else if (mat == 5) {
+    float leafN = noise(vPos.xz * 14.0 + vPos.y * 12.0);
+    float barkN = noise(vec2(atan(vLocal.z, vLocal.x) * 6.0, vPos.y * 16.0));
+    if (vColor.g > vColor.r * 1.15) {
+      base = mix(base * 0.72, base * 1.24 + vec3(0.06, 0.09, 0.0), leafN);
+    } else {
+      base = base * (0.76 + 0.32 * barkN);
+    }
+  }
+  // Mat 6: Haunted Ghost (Shroud folds, necrotic veins, rim glow)
+  else if (mat == 6) {
+    float fold = sin(vPos.x * 22.0 + vPos.z * 22.0 + sin(vPos.y * 8.0 + uTime * 2.2) * 1.5);
+    float vein = noise(vPos.xy * 18.0 + vPos.z * 14.0);
+    float tatter = smoothstep(0.15, 0.95, vPos.y);
+    base = base * (0.84 + 0.16 * fold) * (0.88 + 0.12 * vein);
+    base = mix(vec3(0.10, 0.13, 0.12), base, tatter);
+    float rim = pow(1.0 - max(dot(N, V), 0.0), 2.4);
+    base += vec3(0.20, 0.34, 0.30) * rim * 0.65;
+    emissive = 0.22;
+  }
+  // Mat 7: Monster (Muscular scaly hide, wet specular sheen)
+  else if (mat == 7) {
+    float scaleN = noise(vPos.xy * 24.0 + vPos.z * 24.0);
+    float scar = smoothstep(0.62, 0.68, noise(vPos.xz * 9.0 + vPos.y * 6.0));
+    base = base * (0.76 + 0.34 * scaleN);
+    base = mix(base, vec3(0.32, 0.10, 0.09), scar * 0.45);
+    float rim = pow(1.0 - max(dot(N, V), 0.0), 3.0);
+    base += vec3(0.28, 0.12, 0.08) * rim * 0.45;
+    specPower = 36.0;
+    specStrength = 0.42;
+  }
+  // Mat 9: Emissive Lantern / Glowing Eyes / Crystal
+  else if (mat == 9) {
+    emissive = 0.92;
+  }
+
+  // Realistic Multi-Source Lighting
+  vec3 sunDir = normalize(vec3(-0.45, 0.72, -0.52));
+  vec3 fillDir = normalize(vec3(0.55, 0.35, 0.65));
+  float diff = max(dot(N, sunDir), 0.0);
+  float fill = max(dot(N, fillDir), 0.0) * 0.28;
+  float hemi = N.y * 0.5 + 0.5;
+  vec3 ambient = mix(vec3(0.18, 0.19, 0.24), vec3(0.46, 0.50, 0.62), hemi);
+
+  vec3 H = normalize(sunDir + V);
+  float spec = pow(max(dot(N, H), 0.0), specPower) * specStrength;
+
+  // Warm streetlamp bounce light near ground along avenues
+  float lampGridX = abs( fract((vPos.x - 2.0) / 4.0 + 0.5) - 0.5 ) * 4.0;
+  float lampGridZ = abs( fract((vPos.z - 2.0) / 4.0 + 0.5) - 0.5 ) * 4.0;
+  float lampProximity = clamp(1.0 - length(vec2(lampGridX, lampGridZ)) * 0.38, 0.0, 1.0);
+  vec3 warmBounce = vec3(1.0, 0.72, 0.38) * lampProximity * clamp(1.0 - vPos.y * 0.28, 0.0, 1.0) * 0.24;
+
+  vec3 lit = base * (ambient + vec3(0.98, 0.88, 0.76) * diff * 0.72 + vec3(0.45, 0.55, 0.72) * fill + warmBounce) + vec3(1.0, 0.95, 0.88) * spec;
+  lit = mix(lit, base * 1.18, emissive);
+
+  // Atmospheric Perspective & Twilight Mist
+  float fogFactor = smoothstep(14.0, 46.0, dist);
+  vec3 fogColor = mix(vec3(0.48, 0.44, 0.48), vec3(0.28, 0.35, 0.48), clamp((vPos.y - uEye.y) * 0.08 + 0.4, 0.0, 1.0));
+  vec3 finalColor = mix(lit, fogColor, fogFactor * 0.88);
+
+  gl_FragColor = vec4(finalColor, 1.0);
+}
+`;
+
+let program, loc;
+let townBuffer = null, townVertexCount = 0;
+let unitCubeBuffer = null, unitSphereBuffer = null, sphereVertexCount = 0;
+let vp = new Float32Array(16);
+
+function matmul(a, b) {
+  let out = new Float32Array(16);
+  for (let c = 0; c < 4; c++) {
+    for (let r = 0; r < 4; r++) {
+      let s = 0;
+      for (let k = 0; k < 4; k++) s += a[k * 4 + r] * b[c * 4 + k];
+      out[c * 4 + r] = s;
+    }
+  }
+  return out;
+}
+
+function projection(aspect) {
+  let f = 1 / Math.tan(Math.PI / 5.8), near = 0.08, far = 95;
+  return new Float32Array([
+    f / aspect, 0, 0, 0,
+    0, f, 0, 0,
+    0, 0, (far + near) / (near - far), -1,
+    0, 0, 2 * far * near / (near - far), 0
+  ]);
+}
+
+function view() {
+  let c = Math.cos(yaw), s = Math.sin(yaw);
+  let y = 1.38 + (move ? Math.sin(performance.now() * 0.014) * 0.032 : 0);
+  return new Float32Array([
+    c, 0, -s, 0,
+    0, 1, 0, 0,
+    s, 0, c, 0,
+    -c * px - s * pz, -y, s * px - c * pz, 1
+  ]);
+}
+
+function compileShader(type, text) {
+  let s = gl.createShader(type);
+  gl.shaderSource(s, text);
+  gl.compileShader(s);
+  if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+    throw new Error(gl.getShaderInfoLog(s));
+  }
+  return s;
+}
+
+const cubeFaces = [
+  [[1, 0, 0], [[0.5, -0.5, -0.5], [0.5, 0.5, -0.5], [0.5, 0.5, 0.5], [0.5, -0.5, 0.5]]],
+  [[-1, 0, 0], [[-0.5, -0.5, 0.5], [-0.5, 0.5, 0.5], [-0.5, 0.5, -0.5], [-0.5, -0.5, -0.5]]],
+  [[0, 1, 0], [[-0.5, 0.5, -0.5], [-0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, -0.5]]],
+  [[0, -1, 0], [[-0.5, -0.5, 0.5], [-0.5, -0.5, -0.5], [0.5, -0.5, -0.5], [0.5, -0.5, 0.5]]],
+  [[0, 0, 1], [[0.5, -0.5, 0.5], [0.5, 0.5, 0.5], [-0.5, 0.5, 0.5], [-0.5, -0.5, 0.5]]],
+  [[0, 0, -1], [[-0.5, -0.5, -0.5], [-0.5, 0.5, -0.5], [0.5, 0.5, -0.5], [0.5, -0.5, -0.5]]]
+];
+
+function bindVertexLayout(buf) {
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  const stride = 40; // 10 floats: pos(3), norm(3), col(3), mat(1)
+  gl.enableVertexAttribArray(loc.aPosition);
+  gl.vertexAttribPointer(loc.aPosition, 3, gl.FLOAT, false, stride, 0);
+  gl.enableVertexAttribArray(loc.aNormal);
+  gl.vertexAttribPointer(loc.aNormal, 3, gl.FLOAT, false, stride, 12);
+  gl.enableVertexAttribArray(loc.aColor);
+  gl.vertexAttribPointer(loc.aColor, 3, gl.FLOAT, false, stride, 24);
+  gl.enableVertexAttribArray(loc.aMat);
+  gl.vertexAttribPointer(loc.aMat, 1, gl.FLOAT, false, stride, 36);
+}
+
+function initGL() {
+  program = gl.createProgram();
+  gl.attachShader(program, compileShader(gl.VERTEX_SHADER, vertexShaderSrc));
+  gl.attachShader(program, compileShader(gl.FRAGMENT_SHADER, fragmentShaderSrc));
+  gl.linkProgram(program);
+  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+    throw new Error('WebGL program link failed');
+  }
+  gl.useProgram(program);
+
+  loc = {
+    aPosition: gl.getAttribLocation(program, 'aPosition'),
+    aNormal: gl.getAttribLocation(program, 'aNormal'),
+    aColor: gl.getAttribLocation(program, 'aColor'),
+    aMat: gl.getAttribLocation(program, 'aMat'),
+    uVP: gl.getUniformLocation(program, 'uVP'),
+    uOffset: gl.getUniformLocation(program, 'uOffset'),
+    uScale: gl.getUniformLocation(program, 'uScale'),
+    uColor: gl.getUniformLocation(program, 'uColor'),
+    uMatOverride: gl.getUniformLocation(program, 'uMatOverride'),
+    uRotY: gl.getUniformLocation(program, 'uRotY'),
+    uEye: gl.getUniformLocation(program, 'uEye'),
+    uTime: gl.getUniformLocation(program, 'uTime')
+  };
+
+  // Unit Cube Buffer
+  let cubeVerts = [];
+  cubeFaces.forEach(face => {
+    [0, 1, 2, 0, 2, 3].forEach(idx => {
+      cubeVerts.push(...face[1][idx], ...face[0], 1, 1, 1, 0);
+    });
+  });
+  unitCubeBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, unitCubeBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(cubeVerts), gl.STATIC_DRAW);
+
+  // Unit Sphere Buffer (high-detail for organic realistic monsters/ghosts/foliage)
+  let sVerts = [];
+  const latSteps = 14, lonSteps = 20;
+  const pt = (a, b) => [Math.sin(a) * Math.cos(b) * 0.5, Math.cos(a) * 0.5, Math.sin(a) * Math.sin(b) * 0.5];
+  for (let i = 0; i < latSteps; i++) {
+    for (let j = 0; j < lonSteps; j++) {
+      const a = i * Math.PI / latSteps, b = j * TAU / lonSteps;
+      const c = (i + 1) * Math.PI / latSteps, e = (j + 1) * TAU / lonSteps;
+      for (const p of [pt(a, b), pt(c, b), pt(c, e), pt(a, b), pt(c, e), pt(a, e)]) {
+        sVerts.push(...p, p[0] * 2, p[1] * 2, p[2] * 2, 1, 1, 1, 0);
+      }
+    }
+  }
+  sphereVertexCount = sVerts.length / 10;
+  unitSphereBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, unitSphereBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(sVerts), gl.STATIC_DRAW);
+
+  gl.enable(gl.DEPTH_TEST);
+}
+
+// Build batched static town geometry for high architectural realism at 60fps
+function buildTownMesh() {
+  let verts = [];
+  function addBox(x, y, z, w, h, d, color, mat = 0) {
+    for (let f = 0; f < 6; f++) {
+      const norm = cubeFaces[f][0];
+      const pts = cubeFaces[f][1];
+      const indices = [0, 1, 2, 0, 2, 3];
+      for (let k = 0; k < 6; k++) {
+        const p = pts[indices[k]];
+        verts.push(
+          x + p[0] * w, y + p[1] * h, z + p[2] * d,
+          norm[0], norm[1], norm[2],
+          color[0], color[1], color[2],
+          mat
+        );
+      }
+    }
+  }
+
+  // Base ground turf & park soil
+  addBox(22, -0.14, 14, 54, 0.24, 38, [0.16, 0.26, 0.16], 5);
+
+  // North-South & East-West Asphalt Roads + Sidewalks + Crosswalks + Center Lines
+  for (let i = 0; i <= 10; i++) {
+    let rx = 2 + 4 * i;
+    // Sidewalk curb base
+    addBox(rx, 0.015, 14, 2.15, 0.05, 27.6, [0.52, 0.53, 0.55], 3);
+    // Asphalt road bed
+    addBox(rx, 0.025, 14, 1.72, 0.055, 27.2, [0.17, 0.18, 0.21], 3);
+    // Dashed center yellow lane markings
+    for (let z = 1; z < 28; z++) {
+      if (z % 4 !== 2) {
+        addBox(rx, 0.058, z, 0.05, 0.01, 0.42, [0.86, 0.72, 0.28], 0);
+      }
+    }
+  }
+  for (let j = 0; j <= 6; j++) {
+    let rz = 2 + 4 * j;
+    addBox(22, 0.016, rz, 43.6, 0.05, 2.15, [0.52, 0.53, 0.55], 3);
+    addBox(22, 0.028, rz, 43.2, 0.055, 1.72, [0.17, 0.18, 0.21], 3);
+    for (let x = 1; x < 44; x++) {
+      if (x % 4 !== 2) {
+        addBox(x, 0.06, rz, 0.42, 0.01, 0.05, [0.86, 0.72, 0.28], 0);
+      }
+    }
+  }
+
+  // Pedestrian Zebra Crosswalks at intersections
+  for (let i = 0; i <= 10; i++) {
+    for (let j = 0; j <= 6; j++) {
+      let ix = 2 + 4 * i, iz = 2 + 4 * j;
+      for (let s = -2; s <= 2; s++) {
+        if (i < 10) addBox(ix + 1.15, 0.062, iz + s * 0.26, 0.34, 0.01, 0.13, [0.88, 0.89, 0.91], 0);
+        if (j < 6) addBox(ix + s * 0.26, 0.062, iz + 1.15, 0.13, 0.01, 0.34, [0.88, 0.89, 0.91], 0);
+      }
+    }
+  }
+
+  // Realistic Palettes for the 60 Buildings
+  const wallPalettes = [
+    [0.66, 0.36, 0.28], // Classic red-brown brick
+    [0.76, 0.71, 0.63], // Warm limestone masonry
+    [0.48, 0.54, 0.59], // Slate blue-gray stone
+    [0.69, 0.55, 0.42], // Sandstone terracotta
+    [0.58, 0.62, 0.56], // Olive heritage stone
+    [0.72, 0.64, 0.58], // Cream brownstone
+    [0.52, 0.33, 0.29]  // Aged dark clinker brick
+  ];
+  const awningPalettes = [
+    [0.68, 0.16, 0.18], // Bistro burgundy
+    [0.14, 0.38, 0.26], // Forest green
+    [0.16, 0.32, 0.58], // Royal navy
+    [0.64, 0.38, 0.12], // Amber ochre
+    [0.38, 0.20, 0.48]  // Plum
+  ];
+
+  places.forEach((p, i) => {
+    const wallCol = wallPalettes[i % wallPalettes.length];
+    const awningCol = awningPalettes[i % awningPalettes.length];
+    const trimCol = [0.82, 0.80, 0.76];
+    const darkMetal = [0.16, 0.18, 0.21];
+
+    // 1. Paved sidewalk plot & granite foundation plinth
+    addBox(p.x, 0.06, p.z, 3.32, 0.12, 3.32, [0.60, 0.61, 0.63], 3);
+    addBox(p.x, 0.20, p.z, 2.84, 0.24, 2.84, [0.42, 0.43, 0.45], 0);
+
+    // 2. Main Building Facade (Brick & Masonry shader mat=1)
+    addBox(p.x, p.height / 2 + 0.30, p.z, 2.66, p.height, 2.66, wallCol, 1);
+
+    // 3. Cornerstone Pilasters (4 corners)
+    for (let cx of [-1.31, 1.31]) {
+      for (let cz of [-1.31, 1.31]) {
+        addBox(p.x + cx, p.height / 2 + 0.30, p.z + cz, 0.14, p.height + 0.04, 0.14, trimCol, 0);
+      }
+    }
+
+    // 4. Story Cornice Ledges & Roof Parapet
+    addBox(p.x, 1.72, p.z, 2.76, 0.09, 2.76, trimCol, 0);
+    addBox(p.x, p.height + 0.34, p.z, 2.88, 0.18, 2.88, trimCol, 0);
+    addBox(p.x, p.height + 0.48, p.z, 2.74, 0.14, 2.74, [0.24, 0.26, 0.29], 0);
+
+    // 5. Varied Roof Architecture (Pitched Roofs, Gables, Skylights, Chimneys, HVAC)
+    if (i % 3 === 0) {
+      // Stepped Pitched Slate/Tile Roof + Brick Chimney
+      addBox(p.x, p.height + 0.66, p.z, 2.46, 0.26, 2.46, [0.28, 0.22, 0.20], 4);
+      addBox(p.x, p.height + 0.90, p.z, 1.88, 0.24, 1.88, [0.26, 0.20, 0.18], 4);
+      addBox(p.x, p.height + 1.10, p.z, 1.20, 0.20, 1.20, [0.24, 0.18, 0.16], 4);
+      addBox(p.x + 0.75, p.height + 0.98, p.z - 0.65, 0.32, 0.65, 0.32, [0.55, 0.28, 0.22], 1);
+    } else if (i % 3 === 1) {
+      // Mansard / Terracotta Roof + Rooftop Water Tank
+      addBox(p.x, p.height + 0.68, p.z, 2.38, 0.32, 2.38, [0.54, 0.29, 0.22], 4);
+      addBox(p.x - 0.6, p.height + 0.98, p.z + 0.5, 0.58, 0.46, 0.58, [0.36, 0.28, 0.22], 0);
+    } else {
+      // Modern Crown & Skylight + HVAC units
+      addBox(p.x, p.height + 0.64, p.z, 2.10, 0.22, 2.10, [0.32, 0.36, 0.40], 0);
+      addBox(p.x + 0.5, p.height + 0.82, p.z, 0.65, 0.26, 0.65, [0.62, 0.65, 0.68], 0);
+    }
+
+    // 6. Facade Details on all 4 sides (Windows, Sills, Awnings, Signboard Plaques, Doors)
+    const floors = p.height > 3.8 ? 3 : 2;
+    for (let side of [-1, 1]) {
+      // Striped Shop Awning (North & South + East & West)
+      addBox(p.x, 1.96, p.z + side * 1.48, 2.48, 0.14, 0.38, awningCol, 4);
+      addBox(p.x + side * 1.48, 1.96, p.z, 0.38, 0.14, 2.48, awningCol, 4);
+
+      // 3D Exterior Signboard Frame & Plaque on all 4 walls
+      addBox(p.x, 2.36, p.z + side * 1.36, 2.28, 0.44, 0.08, darkMetal, 0);
+      addBox(p.x, 2.36, p.z + side * 1.38, 2.16, 0.34, 0.06, [0.12, 0.16, 0.22], 0);
+      addBox(p.x + side * 1.36, 2.36, p.z, 0.08, 0.44, 2.28, darkMetal, 0);
+      addBox(p.x + side * 1.38, 2.36, p.z, 0.06, 0.34, 2.16, [0.12, 0.16, 0.22], 0);
+
+      // Carved Wooden Entrance Doors + Brass Handle + Warm Porch Light
+      addBox(p.x, 0.84, p.z + side * 1.34, 0.78, 1.32, 0.06, trimCol, 0);
+      addBox(p.x, 0.82, p.z + side * 1.36, 0.64, 1.24, 0.06, [0.36, 0.21, 0.12], 0);
+      addBox(p.x + 0.20, 0.80, p.z + side * 1.40, 0.06, 0.12, 0.05, [0.88, 0.74, 0.32], 9);
+      addBox(p.x, 1.56, p.z + side * 1.40, 0.24, 0.10, 0.12, [1.0, 0.85, 0.52], 9);
+
+      // Multi-floor Reflective Glass Windows with Stone Sills
+      for (let fl = 0; fl < floors; fl++) {
+        let wy = 1.12 + fl * 1.18;
+        if (wy + 0.45 > p.height + 0.25) continue;
+        for (let k of [-1, 1]) {
+          if (fl === 0 && Math.abs(k) < 0.5) continue;
+          // Z-facing windows + sills
+          addBox(p.x + k * 0.84, wy, p.z + side * 1.35, 0.54, 0.68, 0.04, [0.35, 0.52, 0.68], 2);
+          addBox(p.x + k * 0.84, wy - 0.36, p.z + side * 1.38, 0.62, 0.06, 0.10, trimCol, 0);
+          // X-facing windows + sills
+          addBox(p.x + side * 1.35, wy, p.z + k * 0.84, 0.04, 0.68, 0.54, [0.35, 0.52, 0.68], 2);
+          addBox(p.x + side * 1.38, wy - 0.36, p.z + k * 0.84, 0.10, 0.06, 0.62, trimCol, 0);
+        }
+      }
+
+      // Street-side Planter Boxes & Shrubs
+      addBox(p.x + side * 1.06, 0.26, p.z + 1.50, 0.34, 0.32, 0.34, [0.54, 0.30, 0.20], 1);
+      addBox(p.x + side * 1.06, 0.52, p.z + 1.50, 0.44, 0.34, 0.44, [0.20, 0.44, 0.24], 5);
+    }
+
+    // 7. Entrance Marker Pad at (p.doorX, p.doorZ)
+    addBox(p.doorX, 0.065, p.doorZ, 0.76, 0.05, 0.76, [0.15, 0.48, 0.95], 9);
+    addBox(p.doorX, 0.045, p.doorZ, 0.90, 0.03, 0.90, [0.85, 0.92, 1.0], 0);
+  });
+
+  // Realistic Street Trees along perimeter & avenues
+  function addTree(tx, tz, scale = 1.0) {
+    // Soil planter ring
+    addBox(tx, 0.08, tz, 0.65 * scale, 0.12, 0.65 * scale, [0.36, 0.34, 0.32], 0);
+    // Trunk & branches
+    addBox(tx, 0.95 * scale, tz, 0.22 * scale, 1.8 * scale, 0.22 * scale, [0.34, 0.23, 0.15], 5);
+    // Multi-layered foliage canopy
+    addBox(tx, 2.05 * scale, tz, 1.45 * scale, 0.95 * scale, 1.45 * scale, [0.18, 0.38, 0.21], 5);
+    addBox(tx + 0.18, 2.55 * scale, tz - 0.12, 1.10 * scale, 0.82 * scale, 1.10 * scale, [0.22, 0.44, 0.24], 5);
+    addBox(tx - 0.14, 2.88 * scale, tz + 0.14, 0.75 * scale, 0.60 * scale, 0.75 * scale, [0.26, 0.49, 0.26], 5);
+  }
+
+  for (let x = 0; x <= 44; x += 4) {
+    addTree(x, -0.2, 1.05);
+    addTree(x, 28.2, 1.05);
+  }
+  for (let z = 4; z <= 24; z += 4) {
+    addTree(-0.2, z, 1.0);
+    addTree(44.2, z, 1.0);
+  }
+
+  // Vintage Cast-Iron Streetlamps along intersections
+  function addStreetLamp(lx, lz) {
+    addBox(lx, 0.18, lz, 0.22, 0.32, 0.22, [0.15, 0.17, 0.20], 0);
+    addBox(lx, 1.55, lz, 0.09, 2.75, 0.09, [0.18, 0.20, 0.23], 0);
+    addBox(lx, 2.92, lz, 0.42, 0.08, 0.42, [0.16, 0.18, 0.22], 0);
+    addBox(lx, 3.08, lz, 0.28, 0.28, 0.28, [1.0, 0.86, 0.54], 9);
+    addBox(lx, 3.26, lz, 0.36, 0.08, 0.36, [0.16, 0.18, 0.22], 0);
+  }
+
+  for (let x = 2.85; x <= 43; x += 8) {
+    for (let z = 2.85; z <= 27; z += 8) {
+      addStreetLamp(x, z);
+    }
+  }
+
+  townVertexCount = verts.length / 10;
+  townBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, townBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(verts), gl.STATIC_DRAW);
+}
+
+// Dynamic primitive drawing helpers
+function drawBoxDynamic(x, y, z, w, h, d, color, mat = 0, rotY = 0) {
+  bindVertexLayout(unitCubeBuffer);
+  gl.uniform3f(loc.uOffset, x, y, z);
+  gl.uniform3f(loc.uScale, w, h, d);
+  gl.uniform3fv(loc.uColor, color);
+  gl.uniform1f(loc.uMatOverride, mat);
+  gl.uniform1f(loc.uRotY, rotY);
+  gl.drawArrays(gl.TRIANGLES, 0, 36);
+}
+
+function drawEllipsoidDynamic(x, y, z, w, h, d, color, mat = 0, rotY = 0) {
+  bindVertexLayout(unitSphereBuffer);
+  gl.uniform3f(loc.uOffset, x, y, z);
+  gl.uniform3f(loc.uScale, w, h, d);
+  gl.uniform3fv(loc.uColor, color);
+  gl.uniform1f(loc.uMatOverride, mat);
+  gl.uniform1f(loc.uRotY, rotY);
+  gl.drawArrays(gl.TRIANGLES, 0, sphereVertexCount);
+}
+
+// Realistic Scary Ghost & Articulated Monster Renderer
+function drawEnemy(m, i, time) {
+  const isGhost = i % 2 === 0;
+  const dx = px - m.x, dz = pz - m.z;
+  const dist = Math.hypot(dx, dz) || 1;
+  const fx = dx / dist, fz = dz / dist; // Unit vector facing player
+  const rx = fz, rz = -fx;              // Right vector perpendicular to facing
+  const faceYaw = Math.atan2(fx, fz);
+
+  // Ground contact shadow beneath enemy
+  drawEllipsoidDynamic(m.x, 0.055, m.z, 1.15, 0.02, 1.15, [0.05, 0.05, 0.07], 10, 0);
+
+  if (isGhost) {
+    // HAUNTED GHOST (창백하고 소름 끼치는 실사풍 원귀)
+    const bob = Math.sin(time * 0.0038 + i * 1.7) * 0.09;
+    const sway = Math.sin(time * 0.0024 + i) * 0.05;
+    const shroudCol = [0.74, 0.78, 0.76];
+    const darkShroud = [0.42, 0.47, 0.45];
+    const pallidSkin = [0.68, 0.73, 0.69];
+    const abyssDark = [0.03, 0.03, 0.04];
+
+    // Tattered flowing burial shroud (torso & layered skirt folds)
+    drawEllipsoidDynamic(m.x + rx * sway, 1.18 + bob, m.z + rz * sway, 0.66, 1.52, 0.50, shroudCol, 6, faceYaw);
+    drawEllipsoidDynamic(m.x - fx * 0.06, 1.42 + bob, m.z - fz * 0.06, 0.74, 0.92, 0.54, darkShroud, 6, faceYaw);
+
+    // Protruding skeletal rib/collarbone ridges
+    for (let r = 0; r < 3; r++) {
+      let ry = 1.38 + r * 0.11 + bob;
+      drawEllipsoidDynamic(m.x + fx * 0.22, ry, m.z + fz * 0.22, 0.38 - r * 0.04, 0.05, 0.16, pallidSkin, 6, faceYaw);
+    }
+
+    // Floating tattered cloth strips at bottom hem
+    for (let k = 0; k < 12; k++) {
+      const a = k * TAU / 12 + time * 0.0012;
+      const flutter = Math.sin(time * 0.005 + k * 1.3) * 0.06;
+      const sx = m.x + Math.cos(a) * (0.28 + flutter);
+      const sz = m.z + Math.sin(a) * (0.24 + flutter);
+      const sh = 0.62 + (k % 3) * 0.16;
+      drawEllipsoidDynamic(sx, 0.42 + bob, sz, 0.13, sh, 0.13, (k % 2 === 0) ? shroudCol : darkShroud, 6, a);
+    }
+
+    // Forward-leaning gaunt neck & anatomical skull/head
+    const hx = m.x + fx * 0.14, hy = 2.02 + bob, hz = m.z + fz * 0.14;
+    drawEllipsoidDynamic(hx - fx * 0.05, hy - 0.24, hz - fz * 0.05, 0.20, 0.28, 0.20, pallidSkin, 6, faceYaw);
+    drawEllipsoidDynamic(hx, hy, hz, 0.46, 0.58, 0.44, pallidSkin, 6, faceYaw);
+    // Gaunt cheekbones & sunken jaw
+    drawEllipsoidDynamic(hx + fx * 0.08, hy - 0.16, hz + fz * 0.08, 0.30, 0.32, 0.30, pallidSkin, 6, faceYaw);
+
+    // Deep hollow eye sockets + glowing pinpoint eerie pupils + dark screaming mouth
+    for (let side of [-1, 1]) {
+      const ex = hx + fx * 0.19 + rx * 0.11 * side;
+      const ez = hz + fz * 0.19 + rz * 0.11 * side;
+      drawEllipsoidDynamic(ex, hy + 0.03, ez, 0.14, 0.13, 0.11, abyssDark, 0, faceYaw);
+      drawEllipsoidDynamic(ex + fx * 0.05, hy + 0.03, ez + fz * 0.05, 0.042, 0.042, 0.042, [0.95, 0.22, 0.18], 9, faceYaw);
+
+      // Long tangled black hair strands cascading over face & shoulders
+      for (let h = 0; h < 5; h++) {
+        const hOff = 0.16 + h * 0.035;
+        const hSway = Math.sin(time * 0.004 + h + side) * 0.04;
+        drawEllipsoidDynamic(
+          hx + rx * (hOff * side + hSway) - fx * (0.02 * h),
+          hy - 0.18 - h * 0.06,
+          hz + rz * (hOff * side + hSway) - fz * (0.02 * h),
+          0.08, 0.88 + h * 0.08, 0.10, abyssDark, 0, faceYaw
+        );
+      }
+
+      // Outstretched skeletal arms, drooping sleeves, & clawed fingers reaching for player
+      const reach = Math.sin(time * 0.004 + side) * 0.05;
+      const shX = m.x + rx * 0.36 * side, shZ = m.z + rz * 0.36 * side;
+      const elbX = shX + fx * 0.28 + rx * 0.05 * side, elbZ = shZ + fz * 0.28 + rz * 0.05 * side;
+      const handX = elbX + fx * 0.32, handZ = elbZ + fz * 0.32;
+
+      drawEllipsoidDynamic((shX + elbX) * 0.5, 1.62 + bob, (shZ + elbZ) * 0.5, 0.15, 0.42, 0.18, shroudCol, 6, faceYaw);
+      // Hanging torn sleeve
+      drawEllipsoidDynamic(elbX, 1.36 + bob + reach, elbZ, 0.12, 0.48, 0.22, darkShroud, 6, faceYaw);
+      // Forearm & bony hand
+      drawEllipsoidDynamic((elbX + handX) * 0.5, 1.56 + bob + reach, (elbZ + handZ) * 0.5, 0.10, 0.12, 0.36, pallidSkin, 6, faceYaw);
+      for (let f = -1; f <= 1; f++) {
+        drawEllipsoidDynamic(
+          handX + fx * 0.12 + rx * f * 0.035,
+          1.54 + bob + reach - Math.abs(f) * 0.02,
+          handZ + fz * 0.12 + rz * f * 0.035,
+          0.025, 0.03, 0.14, [0.22, 0.25, 0.23], 0, faceYaw
+        );
+      }
+    }
+    // Back hair curtain
+    drawEllipsoidDynamic(hx - fx * 0.16, hy - 0.28, hz - fz * 0.16, 0.42, 1.05, 0.16, abyssDark, 0, faceYaw);
+    // Screaming gaping mouth & dark blood stain
+    drawEllipsoidDynamic(hx + fx * 0.21, hy - 0.15, hz + fz * 0.21, 0.13, 0.22, 0.10, abyssDark, 0, faceYaw);
+
+  } else {
+    // REALISTIC MUTANT MONSTER / BEAST (근육질의 거대하고 무서운 실사풍 괴수)
+    const walkCycle = time * 0.0085 + i * 2.1;
+    const stride = Math.sin(walkCycle);
+    const bob = Math.abs(Math.cos(walkCycle)) * 0.08;
+    const hideCol = [0.22, 0.24, 0.19];
+    const darkHide = [0.12, 0.14, 0.11];
+    const chestCol = [0.29, 0.25, 0.21];
+    const hornCol = [0.72, 0.68, 0.56];
+    const bloodEye = [1.0, 0.18, 0.10];
+
+    // Hunched muscular upper torso & narrower waist
+    drawEllipsoidDynamic(m.x, 1.12 + bob, m.z, 0.72, 0.85, 0.56, darkHide, 7, faceYaw);
+    drawEllipsoidDynamic(m.x + fx * 0.10, 1.56 + bob, m.z + fz * 0.10, 0.98, 0.88, 0.74, hideCol, 7, faceYaw);
+    drawEllipsoidDynamic(m.x + fx * 0.24, 1.50 + bob, m.z + fz * 0.24, 0.72, 0.68, 0.42, chestCol, 7, faceYaw);
+
+    // Dorsal spine spikes along hunched back
+    for (let sp = 0; sp < 5; sp++) {
+      const sy = 1.25 + sp * 0.18 + bob;
+      const sb = 0.28 - sp * 0.03;
+      drawEllipsoidDynamic(m.x - fx * sb, sy + 0.12, m.z - fz * sb, 0.09, 0.26, 0.14, hornCol, 0, faceYaw);
+    }
+
+    // Beast Head, Snout, Snarling Jaw, Fangs & Curved Horns
+    const hx = m.x + fx * 0.30, hy = 2.02 + bob, hz = m.z + fz * 0.30;
+    drawEllipsoidDynamic(hx, hy, hz, 0.56, 0.54, 0.58, hideCol, 7, faceYaw);
+    // Heavy brow ridge
+    drawEllipsoidDynamic(hx + fx * 0.22, hy + 0.10, hz + fz * 0.22, 0.46, 0.14, 0.24, darkHide, 7, faceYaw);
+    // Open lower jaw & dark maw
+    drawEllipsoidDynamic(hx + fx * 0.24, hy - 0.15, hz + fz * 0.24, 0.36, 0.20, 0.32, [0.22, 0.05, 0.05], 0, faceYaw);
+    drawEllipsoidDynamic(hx + fx * 0.22, hy - 0.22, hz + fz * 0.22, 0.38, 0.12, 0.34, darkHide, 7, faceYaw);
+
+    for (let side of [-1, 1]) {
+      // Glowing bloodshot predator eyes
+      const ex = hx + fx * 0.24 + rx * 0.14 * side;
+      const ez = hz + fz * 0.24 + rz * 0.14 * side;
+      drawEllipsoidDynamic(ex, hy + 0.04, ez, 0.09, 0.07, 0.08, bloodEye, 9, faceYaw);
+
+      // Sharp upper & lower fangs
+      const fxPos = hx + fx * 0.34 + rx * 0.09 * side;
+      const fzPos = hz + fz * 0.34 + rz * 0.09 * side;
+      drawEllipsoidDynamic(fxPos, hy - 0.09, fzPos, 0.04, 0.13, 0.04, hornCol, 0, faceYaw);
+      drawEllipsoidDynamic(fxPos - rx * 0.03 * side, hy - 0.17, fzPos - rz * 0.03 * side, 0.035, 0.11, 0.035, hornCol, 0, faceYaw);
+
+      // Curved multi-segment horns
+      const h1x = hx + rx * 0.24 * side - fx * 0.04, h1z = hz + rz * 0.24 * side - fz * 0.04;
+      const h2x = hx + rx * 0.38 * side + fx * 0.10, h2z = hz + rz * 0.38 * side + fz * 0.10;
+      drawEllipsoidDynamic(h1x, hy + 0.22, h1z, 0.14, 0.24, 0.14, darkHide, 7, faceYaw);
+      drawEllipsoidDynamic(h2x, hy + 0.36, h2z, 0.09, 0.28, 0.12, hornCol, 0, faceYaw);
+
+      // Articulated Walking Legs (Thigh + Knee + Calf + Clawed Foot)
+      const legPhase = stride * side;
+      const hipX = m.x + rx * 0.26 * side, hipZ = m.z + rz * 0.26 * side;
+      const kneeX = hipX + fx * (legPhase * 0.22), kneeZ = hipZ + fz * (legPhase * 0.22);
+      const footX = hipX + fx * (legPhase * 0.34), footZ = hipZ + fz * (legPhase * 0.34);
+      const footLift = Math.max(0, legPhase) * 0.12;
+
+      drawEllipsoidDynamic((hipX + kneeX) * 0.5, 0.72 + bob, (hipZ + kneeZ) * 0.5, 0.28, 0.52, 0.30, hideCol, 7, faceYaw);
+      drawEllipsoidDynamic((kneeX + footX) * 0.5, 0.34 + footLift * 0.5, (kneeZ + footZ) * 0.5, 0.22, 0.48, 0.24, darkHide, 7, faceYaw);
+      drawEllipsoidDynamic(footX + fx * 0.08, 0.10 + footLift, footZ + fz * 0.08, 0.26, 0.16, 0.36, darkHide, 7, faceYaw);
+
+      // Articulated Muscular Arms (Deltoid + Upper Arm + Forearm + Razor Claws)
+      const armSwing = -stride * side * 0.26;
+      const shX = m.x + rx * 0.54 * side + fx * 0.08, shZ = m.z + rz * 0.54 * side + fz * 0.08;
+      const elbX = shX + rx * 0.08 * side + fx * (0.14 + armSwing), elbZ = shZ + rz * 0.08 * side + fz * (0.14 + armSwing);
+      const wristX = elbX + fx * (0.24 + armSwing * 0.5), wristZ = elbZ + fz * (0.24 + armSwing * 0.5);
+
+      drawEllipsoidDynamic(shX, 1.66 + bob, shZ, 0.34, 0.36, 0.34, hideCol, 7, faceYaw);
+      drawEllipsoidDynamic((shX + elbX) * 0.5, 1.34 + bob, (shZ + elbZ) * 0.5, 0.24, 0.52, 0.26, hideCol, 7, faceYaw);
+      drawEllipsoidDynamic((elbX + wristX) * 0.5, 0.96 + bob, (elbZ + wristZ) * 0.5, 0.22, 0.50, 0.26, darkHide, 7, faceYaw);
+      for (let c = -1; c <= 1; c++) {
+        drawEllipsoidDynamic(
+          wristX + fx * 0.14 + rx * c * 0.055,
+          0.68 + bob,
+          wristZ + fz * 0.14 + rz * c * 0.055,
+          0.035, 0.22, 0.045, hornCol, 0, faceYaw
+        );
+      }
+    }
+  }
+}
+
+// Draw 3D Character Avatar for Friends/Peers in the Same Room Code
+function drawPeerAvatar(peer, time) {
+  const av = avatars[peer.avatar || 0] || avatars[0];
+  const bob = Math.sin(time * 0.006) * 0.04;
+  drawEllipsoidDynamic(peer.x, 0.055, peer.z, 0.75, 0.02, 0.75, [0.05, 0.05, 0.07], 10, 0);
+  drawEllipsoidDynamic(peer.x, 0.75 + bob, peer.z, 0.48, 0.95, 0.36, av.rgb, 0, peer.yaw || 0);
+  drawEllipsoidDynamic(peer.x, 1.42 + bob, peer.z, 0.36, 0.38, 0.36, [0.94, 0.82, 0.72], 0, peer.yaw || 0);
+}
+
+// Build 4-sided Wall Sign DOM Overlays with 3D Ray-Box Occlusion Check
+const signs = [];
+places.forEach((p, idx) => {
+  for (let side = 0; side < 4; side++) {
+    const d = document.createElement('div');
+    d.className = 'sign';
+    d.textContent = p.name.toUpperCase();
+    $('labels').appendChild(d);
+    signs.push({
+      el: d,
+      p,
+      idx,
+      x: p.x + (side === 1 ? 1.41 : side === 3 ? -1.41 : 0),
+      z: p.z + (side === 0 ? 1.41 : side === 2 ? -1.41 : 0),
+      side
+    });
+  }
+});
+
+const jewel = document.createElement('div');
+jewel.className = 'jewel';
+jewel.textContent = '💎';
+$('labels').appendChild(jewel);
+
+// Check if line of sight from camera (px, pz) to sign (sx, sz) is blocked by another building
+function isSignOccluded(sx, sz, ownerPlace) {
+  const dx = sx - px, dz = sz - pz;
+  const lenSq = dx * dx + dz * dz;
+  if (lenSq < 0.01) return false;
+  for (let i = 0; i < places.length; i++) {
+    const b = places[i];
+    if (b === ownerPlace) continue;
+    // Quick bounding distance check
+    const bx = b.x - px, bz = b.z - pz;
+    const t = (bx * dx + bz * dz) / lenSq;
+    if (t <= 0.02 || t >= 0.96) continue;
+    const cx = px + t * dx, cz = pz + t * dz;
+    if (Math.abs(cx - b.x) < 1.42 && Math.abs(cz - b.z) < 1.42) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function project(x, y, z) {
+  let v = [x, y, z, 1], q = [0, 0, 0, 0];
+  for (let r = 0; r < 4; r++) {
+    for (let c = 0; c < 4; c++) q[r] += vp[c * 4 + r] * v[c];
+  }
+  if (q[3] <= 0.1) return null;
+  return {
+    x: (q[0] / q[3] * 0.5 + 0.5) * canvas.clientWidth,
+    y: (-0.5 * q[1] / q[3] + 0.5) * canvas.clientHeight,
+    w: q[3]
+  };
+}
+
+function draw(time) {
+  let dpr = Math.min(window.devicePixelRatio || 1, 2);
+  let w = Math.round(canvas.clientWidth * dpr);
+  let h = Math.round(canvas.clientHeight * dpr);
+  if (canvas.width !== w || canvas.height !== h) {
+    canvas.width = w;
+    canvas.height = h;
+  }
+  gl.viewport(0, 0, w, h);
+  gl.clearColor(0.18, 0.24, 0.36, 1);
+  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+  vp = matmul(projection(w / h), view());
+  gl.uniformMatrix4fv(loc.uVP, false, vp);
+  gl.uniform3f(loc.uEye, px, 1.38, pz);
+  gl.uniform1f(loc.uTime, time * 0.001);
+
+  // 1. Render Sky Dome around viewer
+  gl.depthMask(false);
+  drawBoxDynamic(px, 1.38, pz, 110, 110, 110, [1, 1, 1], 8, 0);
+  gl.depthMask(true);
+
+  // 2. Render Batched Realistic Town & 60 Buildings in 1 Draw Call
+  bindVertexLayout(townBuffer);
+  gl.uniform3f(loc.uOffset, 0, 0, 0);
+  gl.uniform3f(loc.uScale, 1, 1, 1);
+  gl.uniform1f(loc.uMatOverride, -1.0);
+  gl.uniform1f(loc.uRotY, 0.0);
+  gl.drawArrays(gl.TRIANGLES, 0, townVertexCount);
+
+  // 3. Render Active 3D Glowing Treasure Crystal & Pedestal at Target Building Door
+  const tp = places[target];
+  if (running && !ended && tp) {
+    const floatY = 0.65 + Math.sin(time * 0.004) * 0.10;
+    drawBoxDynamic(tp.doorX, 0.14, tp.doorZ, 0.42, 0.16, 0.42, [0.22, 0.58, 0.98], 9, time * 0.002);
+    drawEllipsoidDynamic(tp.doorX, floatY, tp.doorZ, 0.32, 0.44, 0.32, [0.35, 0.88, 1.0], 9, time * 0.003);
+  }
+
+  // 4. Render Realistic Ghosts & Articulated Monsters
+  monsters.forEach((m, i) => drawEnemy(m, i, time));
+
+  // 5. Render Same-Code Room Peers (if any)
+  Object.values(peers).forEach(peer => {
+    if (performance.now() - peer.ts < 8000) {
+      drawPeerAvatar(peer, time);
+    }
+  });
+
+  // 6. Update Wall-Mounted Sign Overlays (with occlusion culling)
+  signs.forEach(s => {
+    const outward = [pz > s.p.z + 1.3, px > s.p.x + 1.3, pz < s.p.z - 1.3, px < s.p.x - 1.3][s.side];
+    if (!outward) {
+      s.el.style.display = 'none';
+      return;
+    }
+    const q = project(s.x, 2.36, s.z);
+    const visible = q && q.w < 22 && q.x > 8 && q.x < canvas.clientWidth - 8 && q.y > 8 && q.y < canvas.clientHeight - 8 && !isSignOccluded(s.x, s.z, s.p);
+    s.el.style.display = visible ? 'block' : 'none';
+    if (visible) {
+      s.el.style.left = q.x + 'px';
+      s.el.style.top = q.y + 'px';
+      s.el.style.fontSize = Math.max(8.5, Math.min(14.5, 130 / q.w)) + 'px';
+      s.el.classList.toggle('targetSign', s.idx === target);
+    }
+  });
+
+  // 7. Update 💎 Jewel Icon at Target Entrance
+  if (tp) {
+    const q = project(tp.doorX, 0.72 + Math.sin(time * 0.004) * 0.09, tp.doorZ);
+    const visible = running && !ended && q && q.w < 14 && q.x > 0 && q.x < canvas.clientWidth && q.y > 0 && q.y < canvas.clientHeight && !isSignOccluded(tp.doorX, tp.doorZ, tp);
+    jewel.style.display = visible ? 'block' : 'none';
+    if (visible) {
+      jewel.style.left = q.x + 'px';
+      jewel.style.top = q.y + 'px';
+      jewel.style.fontSize = Math.min(46, Math.max(18, 115 / q.w)) + 'px';
+    }
+  }
+
+  drawMap();
+}
+
+// Minimap (Monsters/Ghosts are intentionally hidden per teacher requirement)
+function drawMap() {
+  let s = '', sc = 4.8;
+  for (let x = 2; x <= 42; x += 4) {
+    s += '<path d="M ' + (x * sc + 10) + ' 10 V 145" stroke="#334155" stroke-width="5"/>';
+  }
+  for (let z = 2; z <= 26; z += 4) {
+    s += '<path d="M 10 ' + (z * sc + 8) + ' H 220" stroke="#334155" stroke-width="5"/>';
+  }
+  places.forEach((p, i) => {
+    const isTarget = running && !ended && i === target;
+    s += '<rect x="' + (p.x * sc + 4) + '" y="' + (p.z * sc + 2) + '" width="12" height="12" fill="' + (isTarget ? '#1e3a8a' : '#1e293b') + '" stroke="' + (isTarget ? '#60a5fa' : '#64748b') + '"/>';
+    s += '<text x="' + (p.x * sc + 10) + '" y="' + (p.z * sc + 10.5) + '" font-size="5.8" text-anchor="middle" fill="#f8fafc">' + (i + 1) + '</text>';
+    // Blue entrance dot
+    s += '<rect x="' + (p.doorX * sc + 8.5) + '" y="' + (p.doorZ * sc + 6.5) + '" width="3" height="3" fill="#38bdf8"/>';
+  });
+  // Peer dots on map
+  Object.values(peers).forEach(peer => {
+    if (performance.now() - peer.ts < 8000) {
+      const av = avatars[peer.avatar || 0] || avatars[0];
+      s += '<circle cx="' + (peer.x * sc + 10) + '" cy="' + (peer.z * sc + 8) + '" r="3.2" fill="' + av.color + '" stroke="#ffffff" stroke-width="0.8"/>';
+    }
+  });
+  // Player position & direction arrow
+  const x = px * sc + 10, z = pz * sc + 8;
+  const col = avatars[selected].color;
+  s += '<circle cx="' + x + '" cy="' + z + '" r="4.2" fill="' + col + '" stroke="#ffffff" stroke-width="1"/>';
+  s += '<path d="M ' + x + ' ' + z + ' l ' + (Math.sin(yaw) * 9) + ' ' + (-Math.cos(yaw) * 9) + '" stroke="#ffffff" stroke-width="2"/>';
+  $('map').innerHTML = s;
+}
+
+function nearestNode(x, z) {
+  return {
+    x: Math.max(2, Math.min(42, 2 + Math.round((x - 2) / 4) * 4)),
+    z: Math.max(2, Math.min(26, 2 + Math.round((z - 2) / 4) * 4))
+  };
+}
+
+function neighbors(x, z) {
+  return [[x - 4, z], [x + 4, z], [x, z - 4], [x, z + 4]].filter(a => a[0] >= 2 && a[0] <= 42 && a[1] >= 2 && a[1] <= 26);
+}
+
+function monsterNext(m) {
+  let ns = neighbors(m.tx, m.tz);
+  let opts = ns.filter(a => a[0] !== m.oldx || a[1] !== m.oldz);
+  if (!opts.length) opts = ns;
+  let n = opts[Math.floor(Math.random() * opts.length)];
+  m.oldx = m.tx;
+  m.oldz = m.tz;
+  m.x = m.tx;
+  m.z = m.tz;
+  m.tx = n[0];
+  m.tz = n[1];
+}
+
+function spawnMonster(x, z) {
+  let m = { x, z, tx: x, tz: z, oldx: -1, oldz: -1 };
+  monsterNext(m);
+  return m;
+}
+
+function setMessage(s) {
+  $('message').textContent = s;
+}
+
+function updateHUD() {
+  let heading = ['North', 'East', 'South', 'West'][((Math.round(yaw / (Math.PI / 2)) % 4) + 4) % 4];
+  $('progress').textContent = '❤️'.repeat(lives) + '🤍'.repeat(3 - lives) + ' · 💎 ' + score + '개';
+  const peerCount = Object.values(peers).filter(p => performance.now() - p.ts < 8000).length;
+  $('roomBadge').textContent = roomCode
+    ? '방 코드: ' + roomCode + (peerCount > 0 ? ' (친구 ' + peerCount + '명 접속 중)' : '')
+    : '방 코드: 개인 탐험';
+  $('status').textContent = (student ? student.className + '반 ' + student.number + '번 ' + student.name + ' · ' + avatars[selected].name + ' · ' : '')
+    + '방향: ' + heading + ' · 적 속도: ' + (1 + score * 0.18).toFixed(2) + '배'
+    + (invincible > 0 ? ' · 잠시 무적 상태입니다.' : '');
+  const qText = ended
+    ? 'Game over. Try again!'
+    : 'Where is the ' + places[target].name + '?';
+  $('question').textContent = qText;
+  $('questionBanner').textContent = qText;
+}
+
+function nextTreasureTarget() {
+  let next = Math.floor(Math.random() * places.length);
+  if (places.length > 1 && next === target) {
+    next = (next + 1 + Math.floor(Math.random() * (places.length - 1))) % places.length;
+  }
+  return next;
+}
+
+function collectTreasure() {
+  if (!running || paused || ended) return;
+  score++;
+  playChime();
+  broadcastState('collect', { target });
+  target = nextTreasureTarget();
+  setMessage('💎 보물을 획득했습니다! 지금까지 ' + score + '개를 모았습니다. 다음 보물이 ' + places[target].name + '에 나타났습니다!');
+  updateHUD();
+  if (hintOn) showHint();
+}
+
+function checkAutoCollect() {
+  if (!running || paused || ended) return;
+  const p = places[target];
+  if (p && Math.hypot(px - p.doorX, pz - p.doorZ) <= 1.22) {
+    collectTreasure();
+  }
+}
+
+function restart() {
+  if (!student || !characterReady) return;
+  initAudio();
+  px = 2;
+  pz = 26;
+  yaw = 0;
+  lives = 3;
+  score = 0;
+  move = null;
+  turn = null;
+  invincible = 0;
+  ended = false;
+  paused = false;
+  hintOn = false;
+  $('hint').textContent = '';
+  target = Math.floor(Math.random() * places.length);
+  monsters = [
+    spawnMonster(42, 2),
+    spawnMonster(26, 14),
+    spawnMonster(42, 26),
+    spawnMonster(14, 6),
+    spawnMonster(34, 18)
+  ];
+  running = true;
+  $('welcome').style.display = 'none';
+  $('pause').textContent = 'Pause';
+  setMessage('질문에 나온 장소의 파란 입구(💎)에 닿으면 자동으로 보물을 획득합니다!');
+  updateHUD();
+}
+
+function straight(blocks) {
+  if (!running || paused || ended || move || turn) return;
+  let dx = Math.round(Math.sin(yaw)), dz = -Math.round(Math.cos(yaw));
+  let tx = px + dx * 4 * blocks, tz = pz + dz * 4 * blocks;
+  if (tx < 2 || tx > 42 || tz < 2 || tz > 26) {
+    setMessage('마을 경계입니다. Turn left 또는 Turn right로 방향을 바꿔 주세요.');
+    return;
+  }
+  move = { tx, tz, dx, dz };
+  setMessage('Go straight ' + blocks + (blocks === 1 ? ' block.' : ' blocks.'));
+}
+
+function rotate(dir) {
+  if (!running || paused || ended || move || turn) return;
+  turn = { goal: yaw + dir * Math.PI / 2 };
+  setMessage(dir < 0 ? 'Turn left.' : 'Turn right.');
+}
+
+function finish(win) {
+  ended = true;
+  move = null;
+  turn = null;
+  setMessage(win
+    ? '탐험 종료! 지금까지 💎 보물 ' + score + '개를 모았습니다. Restart로 다시 도전하세요.'
+    : '목숨을 모두 잃었습니다. Restart로 다시 도전하세요.');
+  updateHUD();
+}
+
+function search() {
+  if (!running || paused || ended || move || turn) return;
+  let p = places[target];
+  if (Math.hypot(px - p.doorX, pz - p.doorZ) > 1.25) {
+    let n = places.find(a => Math.hypot(px - a.doorX, pz - a.doorZ) < 1.25);
+    setMessage(n
+      ? '여기는 ' + n.name + '입니다. ' + p.name + '의 입구(💎)를 찾아가세요.'
+      : '목표 장소(' + p.name + ')의 파란 입구로 이동하면 자동으로 획득됩니다.');
+    return;
+  }
+  collectTreasure();
+}
+
+function showHint() {
+  if (!running || ended) return;
+  hintOn = true;
+  let p = places[target], node = nearestNode(px, pz), route = [], x = node.x, z = node.z;
+  while (z !== p.doorZ) {
+    let nz = z + Math.sign(p.doorZ - z) * 4;
+    route.push({ x, z: nz });
+    z = nz;
+  }
+  while (x !== p.doorX) {
+    let nx = x + Math.sign(p.doorX - x) * 4;
+    route.push({ x: nx, z });
+    x = nx;
+  }
+  let steps = [], heading = ((Math.round(yaw / (Math.PI / 2)) % 4) + 4) % 4, cx = node.x, cz = node.z;
+  let runs = [];
+  route.forEach(n => {
+    let d = n.x > cx ? 1 : n.x < cx ? 3 : n.z > cz ? 2 : 0;
+    if (runs.length && runs[runs.length - 1].d === d) runs[runs.length - 1].n++;
+    else runs.push({ d, n: 1 });
+    cx = n.x;
+    cz = n.z;
+  });
+  runs.forEach(r => {
+    let change = (r.d - heading + 4) % 4;
+    if (change === 1) steps.push('Turn right.');
+    else if (change === 3) steps.push('Turn left.');
+    else if (change === 2) steps.push('Turn right. Turn right.');
+    steps.push('Go straight ' + r.n + (r.n === 1 ? ' block.' : ' blocks.'));
+    heading = r.d;
+  });
+  let side = heading === 0 || heading === 1 ? 'right' : 'left';
+  let index = target % 10, near = places[target + (index < 9 ? 1 : -1)];
+  $('hint').textContent = (steps.length ? steps.join(' ') : 'You are at the entrance.')
+    + " It's on your " + side + ". It's next to the " + near.name + ".";
+}
+
+function tick(t) {
+  let dt = Math.min((t - last) / 1000, 0.04);
+  last = t;
+  if (running && !paused && !ended) {
+    invincible = Math.max(0, invincible - dt);
+    if (turn) {
+      let diff = turn.goal - yaw, step = dt * 3.8;
+      if (Math.abs(diff) <= step) {
+        yaw = turn.goal;
+        turn = null;
+        if (hintOn) showHint();
+      } else {
+        yaw += Math.sign(diff) * step;
+      }
+    }
+    if (move) {
+      let dist = Math.hypot(move.tx - px, move.tz - pz), step = dt * 3.1;
+      if (dist <= step) {
+        px = move.tx;
+        pz = move.tz;
+        move = null;
+        checkAutoCollect();
+        if (hintOn) showHint();
+      } else {
+        px += move.dx * step;
+        pz += move.dz * step;
+        checkAutoCollect();
+      }
+      broadcastState('move');
+    }
+    monsters.forEach(m => {
+      let dx = m.tx - m.x, dz = m.tz - m.z, dist = Math.hypot(dx, dz);
+      let step = dt * 0.92 * (1 + score * 0.18);
+      if (dist <= step) {
+        monsterNext(m);
+      } else {
+        m.x += dx / dist * step;
+        m.z += dz / dist * step;
+      }
+      if (invincible === 0 && Math.hypot(m.x - px, m.z - pz) < 0.68) {
+        lives--;
+        invincible = 3.5;
+        setMessage('귀신·괴물과 마주쳤습니다! 목숨이 1개 줄었습니다. 3.5초 동안 무적이니 피하세요.');
+        if (lives <= 0) finish(false);
+      }
+    });
+    updateHUD();
+  }
+  $('flash').style.borderWidth = invincible > 3 ? '7px' : '0';
+  updateSound();
+  draw(t);
+  requestAnimationFrame(tick);
+}
+
+// Same-Room Multiplayer Sync via BroadcastChannel (works across tabs/windows without external server)
+const clientId = 'p_' + Math.random().toString(36).slice(2, 9);
+function setupRoomChannel(code) {
+  if (bc) {
+    try { bc.close(); } catch (e) {}
+    bc = null;
+  }
+  peers = {};
+  if (!code || typeof BroadcastChannel === 'undefined') return;
+  try {
+    bc = new BroadcastChannel('treasure_town_room_' + code.toUpperCase());
+    bc.onmessage = ev => {
+      const d = ev.data;
+      if (!d || d.id === clientId) return;
+      if (d.type === 'move') {
+        peers[d.id] = { x: d.x, z: d.z, yaw: d.yaw, name: d.name, avatar: d.avatar, score: d.score, ts: performance.now() };
+      } else if (d.type === 'collect' && running && !ended) {
+        setMessage('친구(' + d.name + ')가 보물을 획득했습니다!');
+      }
+    };
+  } catch (e) {}
+}
+
+function broadcastState(type, extra = {}) {
+  if (!bc || !student) return;
+  try {
+    bc.postMessage({
+      type,
+      id: clientId,
+      name: student.name,
+      avatar: selected,
+      x: px,
+      z: pz,
+      yaw,
+      score,
+      ...extra
+    });
+  } catch (e) {}
+}
+
+// Audio Engine (Eerie Proximity Ghost Sound + Treasure Chime)
+let audio = null, master = null, voiceGain = null, noiseGain = null, audioFailed = false;
+function initAudio() {
+  try {
+    if (!audio) {
+      const A = window.AudioContext || window.webkitAudioContext;
+      if (!A) throw new Error('no audio');
+      audio = new A();
+      master = audio.createGain();
+      master.gain.value = Number($('volume').value) / 100;
+      master.connect(audio.destination);
+
+      voiceGain = audio.createGain();
+      voiceGain.gain.value = 0;
+      voiceGain.connect(master);
+
+      const osc = audio.createOscillator();
+      osc.type = 'sawtooth';
+      osc.frequency.value = 142;
+      const filter = audio.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.value = 420;
+      filter.Q.value = 2.4;
+      osc.connect(filter);
+      filter.connect(voiceGain);
+      osc.start();
+
+      const lfo = audio.createOscillator(), lg = audio.createGain();
+      lfo.frequency.value = 4.8;
+      lg.gain.value = 26;
+      lfo.connect(lg);
+      lg.connect(osc.frequency);
+      lfo.start();
+
+      const b = audio.createBuffer(1, audio.sampleRate * 2, audio.sampleRate);
+      const data = b.getChannelData(0);
+      for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+      const noise = audio.createBufferSource();
+      noise.buffer = b;
+      noise.loop = true;
+      const nf = audio.createBiquadFilter();
+      nf.type = 'bandpass';
+      nf.frequency.value = 760;
+      nf.Q.value = 0.9;
+      noiseGain = audio.createGain();
+      noiseGain.gain.value = 0;
+      noise.connect(nf);
+      nf.connect(noiseGain);
+      noiseGain.connect(master);
+      noise.start();
+    }
+    if (audio.state === 'suspended') {
+      audio.resume().catch(() => {
+        audioFailed = true;
+        $('soundState').textContent = '소리를 켜려면 소리 버튼을 눌러 주세요.';
+      });
+    }
+  } catch (e) {
+    audioFailed = true;
+    $('soundState').textContent = '이 브라우저는 소리를 지원하지 않습니다.';
+  }
+}
+
+function playChime() {
+  if (!audio || !master || $('soundToggle').getAttribute('aria-pressed') !== 'true') return;
+  try {
+    const now = audio.currentTime;
+    [523.25, 659.25, 783.99].forEach((freq, idx) => {
+      const o = audio.createOscillator();
+      const g = audio.createGain();
+      o.type = 'triangle';
+      o.frequency.value = freq;
+      g.gain.setValueAtTime(0.14, now + idx * 0.07);
+      g.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.07 + 0.25);
+      o.connect(g);
+      g.connect(master);
+      o.start(now + idx * 0.07);
+      o.stop(now + idx * 0.07 + 0.26);
+    });
+  } catch (e) {}
+}
+
+function updateSound() {
+  let distance = Infinity;
+  if (running && !paused && !ended && !document.hidden) {
+    monsters.forEach(m => {
+      distance = Math.min(distance, Math.hypot(m.x - px, m.z - pz));
+    });
+  }
+  const nearby = distance <= 4;
+  $('danger').hidden = !nearby;
+  if (!audio) return;
+  const intensity = nearby ? Math.min(1, 0.24 + (4 - distance) / 4) : 0;
+  const enabled = $('soundToggle').getAttribute('aria-pressed') === 'true';
+  master.gain.setTargetAtTime(enabled ? Number($('volume').value) / 100 : 0, audio.currentTime, 0.06);
+  voiceGain.gain.setTargetAtTime(intensity * 0.13, audio.currentTime, 0.12);
+  noiseGain.gain.setTargetAtTime(intensity * 0.04, audio.currentTime, 0.12);
+  if (!audioFailed) {
+    $('soundState').textContent = enabled
+      ? (nearby ? '주의! 귀신·괴물이 1블록 이내에 있습니다.' : '소리가 켜져 있습니다.')
+      : '소리가 꺼져 있습니다.';
+  }
+}
+
+// Event Listeners (Both Panel Buttons & Translucent On-Screen Overlay Buttons)
+$('start').onclick = () => { initAudio(); restart(); };
+$('reset').onclick = restart;
+$('left').onclick = () => rotate(-1);
+$('right').onclick = () => rotate(1);
+$('hudLeft').onclick = () => rotate(-1);
+$('hudRight').onclick = () => rotate(1);
+$('hudForward1').onclick = () => straight(1);
+$('hudForward2').onclick = () => straight(2);
+$('hudForward3').onclick = () => straight(3);
+$('search').onclick = search;
+$('hintBtn').onclick = showHint;
+document.querySelectorAll('.move').forEach(b => {
+  b.onclick = () => straight(Number(b.dataset.blocks));
+});
+$('pause').onclick = () => {
+  if (!running || ended) return;
+  paused = !paused;
+  $('pause').textContent = paused ? 'Resume' : 'Pause';
+  setMessage(paused ? '일시정지했습니다. 괴물과 캐릭터가 모두 멈춥니다.' : '탐험을 다시 시작합니다.');
+};
+
+document.addEventListener('keydown', e => {
+  if (!characterReady || ['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
+  if (['ArrowUp', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) e.preventDefault();
+  if (e.repeat) return;
+  if (e.key === 'ArrowUp') straight(1);
+  if (e.key === 'ArrowLeft') rotate(-1);
+  if (e.key === 'ArrowRight') rotate(1);
+  if (e.key === ' ') search();
+  if (e.key.toLowerCase() === 'p') $('pause').click();
+});
+
+$('loginForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const code = $('codeInput').value.trim().toUpperCase();
+  const c = $('classInput').value.trim();
+  const n = $('numberInput').value.trim();
+  const name = $('nameInput').value.trim();
+  if (!c || !n || !name || Number(n) < 1) {
+    $('loginError').textContent = '반, 번호, 이름을 모두 입력해 주세요.';
+    return;
+  }
+  roomCode = code;
+  student = { className: c, number: n, name };
+  setupRoomChannel(roomCode);
+  $('loginPage').hidden = true;
+  $('characterPage').hidden = false;
+  $('greeting').textContent = c + '반 ' + n + '번 ' + name + '님' + (roomCode ? ' (방 코드: ' + roomCode + ')' : '') + ', 캐릭터를 골라 주세요.';
+  $('char0').focus();
+});
+
+avatars.forEach((a, i) => {
+  const b = document.createElement('button');
+  b.id = 'char' + i;
+  b.type = 'button';
+  b.className = 'character';
+  b.setAttribute('aria-pressed', i === 0 ? 'true' : 'false');
+  const icon = document.createElement('span');
+  icon.className = 'characterIcon';
+  icon.textContent = a.icon;
+  const title = document.createElement('strong');
+  title.textContent = a.name;
+  const desc = document.createElement('span');
+  desc.textContent = a.desc;
+  b.append(icon, title, desc);
+  $('characterList').appendChild(b);
+  b.onclick = () => {
+    selected = i;
+    avatars.forEach((_, j) => $('char' + j).setAttribute('aria-pressed', i === j ? 'true' : 'false'));
+  };
+});
+
+$('chooseCharacter').onclick = () => {
+  characterReady = true;
+  $('entry').hidden = true;
+  $('portrait').textContent = avatars[selected].icon + ' ' + avatars[selected].name;
+  initAudio();
+  restart();
+  broadcastState('move');
+};
+
+$('backLogin').onclick = () => {
+  $('characterPage').hidden = true;
+  $('loginPage').hidden = false;
+};
+
+$('logout').onclick = () => {
+  running = false;
+  paused = true;
+  characterReady = false;
+  student = null;
+  monsters = [];
+  $('entry').hidden = false;
+  $('loginPage').hidden = false;
+  $('characterPage').hidden = true;
+  $('welcome').style.display = 'none';
+  $('portrait').textContent = '캐릭터 선택 전';
+  $('classInput').focus();
+  updateSound();
+};
+
+$('soundToggle').onclick = () => {
+  initAudio();
+  const on = $('soundToggle').getAttribute('aria-pressed') !== 'true';
+  $('soundToggle').setAttribute('aria-pressed', String(on));
+  $('soundToggle').textContent = on ? '소리 끄기' : '소리 켜기';
+  updateSound();
+};
+
+$('volume').oninput = updateSound;
+
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden && running && !ended) {
+    paused = true;
+    $('pause').textContent = 'Resume';
+  }
+  updateSound();
+});
+
+try {
+  if (!gl) {
+    throw new Error('이 브라우저에서 WebGL을 사용할 수 없습니다. Chrome 또는 Edge에서 하드웨어 가속을 켜 주세요.');
+  }
+  initGL();
+  buildTownMesh();
+  updateHUD();
+  requestAnimationFrame(tick);
+} catch (e) {
+  $('error').textContent = e.message;
+  $('start').disabled = true;
+}
+</script>
+</body>
+</html>
